@@ -130,11 +130,22 @@ Return a descriptive message.
 
 **Branch rule:**
 
+If search_listings returns an empty list, run_agent puts a message in session["error"] and returns the session immediately. The message names the query that was tried and suggests what to change: raise the price limit, change or drop the size, or use more general keywords. suggest_outfit and create_fit_card are never called, so fit_card stays None. Otherwise, it stores the first result in session["selected_item"], calls suggest_outfit with that item and the wardrobe, then passes the outfit and the item to create_fit_card.
+
 **Where it lives:** `agent.py::run_agent`
 
 **How the query is parsed:** <!-- regex, string splitting, or asking the model — say which -->
+The query is parsed with regular expressions, not the model. The parsing lives in _parse_query in agent.py. It handles the three fields in this order:
+1. Price (max_price): It matches a limit word followed by a number: under, below, less than, up to, max, maximum, at most, within, or <. It also accepts a bare dollar amount like "$50". It takes the first match as a float, so "under $30" gives 30.0. The matched text is removed from the query.
+2. Size (size): It first looks for the word "size" followed by a value: "size M", "size XXS", "size M/L" or "size US 9". The us, uk and eu prefixes are allowed.
+If that fails, it looks for a lone size token (xxs, xs, s, m, l, xl, xxl) written in capitals, like "denim jacket M". The capitals rule stops ordinary words like "a" or "m" from being read as sizes.
+The matched text is removed from the query.
+3. Description: Whatever is left has commas and semicolons stripped and whitespace collapsed. For "looking for a vintage graphic tee under $30, size M" it keeps "looking for a vintage graphic tee". Filler words like "looking for" are left in. search_listings already drops them as stopwords, so there was no need to strip them here.
+
+
 
 **What moves through the session:** <!-- which fields, in what order -->
+query → parsed (description, size, max_price) → search_results → selected_item → outfit_suggestion → fit_card. The error field is set only when the run stops early.
 
 ---
 
@@ -193,15 +204,25 @@ Found these vintage Levi's 501 jeans and they have the exact broken-in 90s slouc
 **Moment 1**
 
 - *What I asked for:*
+I asked Claude how the query is parsed in agent.py::_parse_query.
 - *What came back:*
+The AI only said the query is parsed with regular expressions and showed example inputs and outputs for max_price, size and description. It did not spell out the rules behind those results.
 - *What I changed:*
+When I asked specifically how the query is parsed, the AI gave the regex rules it uses to extract max_price, size and description.
 
 **Moment 2**
 
 - *What I asked for:*
+
+I asked Claude to give suggestions on the fifth criteria that testing working for the agent.
+
 - *What came back:*
+
+It suggest me about the max price ceiling cap.
+
 - *What I changed:*
 
+I would like to write one for the empty wardrobe path, so I rewrote the fifth criteria to be about the empty wardrobe path. 
 <!-- ═══════════════════════ UNIT 4 — THE TEST ═══════════════════════
 
      Don't fill these in during unit 3.

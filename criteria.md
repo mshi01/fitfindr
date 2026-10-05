@@ -28,7 +28,7 @@ tool calls and returns a fit card — in at least 4 of 5 tries.
 <!-- Why 4 of 5 and not 5 of 5? Something about your search, probably —
      "my search is a plain keyword match and some phrasings will miss" is a
      real answer. -->
-
+I picked 4 of 5 rather than 5 of 5 because search_listings is a plain keyword match. A query phrased differently from the listing title (for example "vintage denim jacket" against "Levi's trucker jacket") can return nothing even when a good listing exists. Allowing one miss in five covers that, and a miss here points to a search-matching problem rather than a loop problem.
 ---
 
 ## 2. An impossible query stops before the second tool
@@ -39,11 +39,12 @@ Given a query that matches no listings, the agent stops before calling
 **Why this target:**
 <!-- Why is 5 of 5 reasonable here when criterion 1 isn't? What's different
      about this path? -->
-
+5 of 5 is the right target here because this path has no variance. When search_listings returns nothing, the if not session["search_results"] check in the agent loop is plain code with no model call. It sets session["error"] and returns before suggest_outfit runs, so the same query should stop at the same point every time. Any miss would mean a bug in the guard, not an unlucky run.
 ---
 
 ## 3. Something about state
 
+In 5 of 5 matching runs, the item passed to suggest_outfit and create_fit_card is identical (same listing id and price) to session["selected_item"], and selected_item is search_results[0].
 <!-- YOU WRITE THIS ONE.
 
      How would you know that the item your search found is the same item the
@@ -58,7 +59,7 @@ Given a query that matches no listings, the agent stops before calling
 
 **Why this target:**
 
-
+5 of 5 is the right target because passing state between tools involves no model call. The agent sets session["selected_item"] to the first search result and hands that same dict to suggest_outfit and create_fit_card. Nothing in that path can vary between runs, so any mismatch would mean something mutated or re-fetched the item. That would be a bug in how the session is used.
 
 ---
 
@@ -74,11 +75,12 @@ Given a query that matches no listings, the agent stops before calling
      mentions the price? Two different items producing the same opening
      sentence? A card longer than a caption anyone would post? Any of those can
      be turned into a number. -->
-
+For 5 different items, each fit card mentions the item's exact price, and shares no identical opening sentence.
 
 
 **Why this target:**
 
+For 5 different items, each fit card mentions that item's exact price, and no two of the 5 cards share the same opening sentence. All 5 must meet both conditions.
 
 
 ---
@@ -91,12 +93,12 @@ Given a query that matches no listings, the agent stops before calling
      wardrobe path, what happens when the model can't be reached, whether the
      search respects a price ceiling — anything, as long as it names a number
      or an observable outcome. -->
-
+With an empty wardrobe and a query that matches a listing, the agent completes all three tools in 5 of 5 runs. session["error"] stays None, suggest_outfit returns a non-empty outfit built around the found item, and the fit card is non-empty. 
 
 
 **Why this target:**
 
-
+With an empty wardrobe and a query that matches a listing, suggest_outfit returns general styling advice for the found item. The agent doesn't raise an error and still calls create_fit_card, in 5 of 5 runs. The empty-wardrobe branch is a fixed code path.
 
 ---
 

@@ -13,6 +13,8 @@ Build and test your three tools in `tools.py` first. Then come here.
     python agent.py          runs both example paths below
 """
 
+import re
+
 import config
 import trace
 from tools import search_listings, suggest_outfit, create_fit_card
@@ -107,9 +109,102 @@ def run_agent(query: str, wardrobe: dict) -> dict:
     """
     session = new_session(query, wardrobe)
 
-    # TODO: delete these two lines and build the loop.
-    session["error"] = "The planning loop isn't built yet — see the TODO in agent.py."
+    # Each pass through the loop runs one stage; what a stage returns decides
+    # which stage runs next (or whether the run ends).
+    stage = "search"
+    count = 0
+    while stage != "done":
+        count += 1
+        trace.check_iterations(count)
+
+        if stage == "search":
+            parsed = _parse_query(query)
+            session["parsed"] = parsed
+            session["search_results"] = search_listings(
+                parsed["description"], parsed["size"], parsed["max_price"]
+            )
+            # THE BRANCH: nothing found means we stop here, before any model call.
+            if not session["search_results"]:
+                session["error"] = _no_results_message(parsed)
+                return session
+            session["selected_item"] = session["search_results"][0]
+            stage = "outfit"
+
+        elif stage == "outfit":
+            session["outfit_suggestion"] = suggest_outfit(
+                session["selected_item"], session["wardrobe"]
+            )
+            stage = "card"
+
+        elif stage == "card":
+            session["fit_card"] = create_fit_card(
+                session["outfit_suggestion"], session["selected_item"]
+            )
+            stage = "done"
+
     return session
+
+
+# ── query parsing ─────────────────────────────────────────────────────────────
+# Regex rather than the model: it's free, instant, and these three fields have
+# predictable shapes.
+
+_PRICE_RE = re.compile(
+    r"(?:(?:under|below|less than|up to|max(?:imum)?|at most|within|<=?)\s*\$?\s*|\$\s*)"
+    r"(\d+(?:\.\d+)?)",
+    re.IGNORECASE,
+)
+_SIZE_RE = re.compile(
+    r"\bsize\s+((?:us|uk|eu)\s*\d+(?:\.\d+)?|[a-z0-9.]+(?:/[a-z0-9.]+)?)",
+    re.IGNORECASE,
+)
+_BARE_SIZE_RE = re.compile(r"\b(xxs|xs|xxl|xl|s|m|l)\b", re.IGNORECASE)
+
+
+def _parse_query(query: str) -> dict:
+    """Pull description, size and max_price out of a plain-language query."""
+    text = query
+    max_price = None
+    size = None
+
+    m = _PRICE_RE.search(text)
+    if m:
+        max_price = float(m.group(1))
+        text = text[: m.start()] + " " + text[m.end():]
+
+    m = _SIZE_RE.search(text)
+    if m:
+        size = m.group(1).strip()
+        text = text[: m.start()] + " " + text[m.end():]
+    else:
+        # A lone size letter only counts when written in capitals ("tee, M"),
+        # so the word "a" or "m" inside prose isn't misread.
+        for m in _BARE_SIZE_RE.finditer(query):
+            if m.group(1).isupper() and len(m.group(1)) > 0 and m.group(1) != "A":
+                size = m.group(1)
+                text = text.replace(m.group(0), " ", 1)
+                break
+
+    description = re.sub(r"[,;]+", " ", text)
+    description = re.sub(r"\s+", " ", description).strip()
+    return {"description": description, "size": size, "max_price": max_price}
+
+
+def _no_results_message(parsed: dict) -> str:
+    """Say what the user could change, based on which filters were active."""
+    tried = f"\"{parsed['description']}\""
+    if parsed["size"]:
+        tried += f" in size {parsed['size']}"
+    if parsed["max_price"] is not None:
+        tried += f" under ${parsed['max_price']:g}"
+
+    options = []
+    if parsed["max_price"] is not None:
+        options.append("raise your price limit")
+    if parsed["size"]:
+        options.append("try a different size or drop the size")
+    options.append("use fewer or more general keywords (e.g. \"jacket\" instead of a specific style)")
+    return f"No listings matched {tried}. You could " + "; ".join(options) + "."
 
 
 # ── running it directly ───────────────────────────────────────────────────────
