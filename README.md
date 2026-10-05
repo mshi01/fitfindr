@@ -60,14 +60,13 @@
 ### `search_listings`
 
 - **What it does:**
-
 Search the listings data for items matching a description, and optionally a size and a price ceiling. 
 - **Inputs:** <!-- name and type each: `max_price` (float), not "a price" -->
-     description (str): keywords describing what the user wants
+     - description (str): keywords describing what the user wants
           
-     size (str) || None (None): a size string to filter by, or None to skip size filtering.
+     - size (str) || None (None): a size string to filter by, or None to skip size filtering.
 
-     max_price (float) || None (None): maximum price, inclusive, or None to skip price filtering.
+     - max_price (float) || None (None): maximum price, inclusive, or None to skip price filtering.
 - **Returns:**
 A list of matching listing dicts, best match first. Each listing dict has these fields:
 id, title, description, category, style_tags (list), size, condition, price (float), colors (list), brand (str or None), platform.
@@ -77,18 +76,16 @@ Returns an empty list.
 ### `suggest_outfit`
 
 - **What it does:**
-
 Given a thrifted item and the user's wardrobe, suggest one or two outfits.
 
 - **Inputs:**
 
-new_item: a listing dict, the item the user is considering. Each listing dict has these fields:
+     - new_item: a listing dict, the item the user is considering. Each listing dict has these fields:
 id, title, description, category, style_tags (list), size, condition, price (float), colors (list), brand (str or None), platform.
 
-wardrobe: a wardrobe dict with an 'items' key holding a list of items. Each item has the fields of id, name, category, colors, style_tags and notes. It may be empty.
+     - wardrobe: a wardrobe dict with an 'items' key holding a list of items. Each item has the fields of id, name, category, colors, style_tags and notes. It may be empty.
 
 - **Returns:**
-
 A non-empty string with outfit suggestions. 
 
 - **When it has nothing:**
@@ -97,18 +94,14 @@ With an empty wardrobe, return general styling advice.
 ### `create_fit_card`
 
 - **What it does:**
-
 Write a short caption someone would actually post about the find.
 
 - **Inputs:**
-
 outfit:   the outfit suggestion string from suggest_outfit().
 new_item: the listing dict for the item.
 
 - **Returns:**
-
 A two-to-four sentence caption.
-
 - **When it has nothing:**
 
 Return a descriptive message.
@@ -190,6 +183,7 @@ $ python -c "from tools import create_fit_card; ..."
 
 ```
 Found these vintage Levi's 501 jeans and they have the exact broken-in 90s slouch you always look for. Snagged them on depop for $38, which feels like a steal for denim that actually fits right. Just pair them with some beat-up white sneakers and you're done.
+
 ---
 
 ## How I Used AI
@@ -213,15 +207,12 @@ When I asked specifically how the query is parsed, the AI gave the regex rules i
 **Moment 2**
 
 - *What I asked for:*
-
 I asked Claude to give suggestions on the fifth criteria that testing working for the agent.
 
 - *What came back:*
-
 It suggest me about the max price ceiling cap.
 
 - *What I changed:*
-
 I would like to write one for the empty wardrobe path, so I rewrote the fifth criteria to be about the empty wardrobe path. 
 <!-- ═══════════════════════ UNIT 4 — THE TEST ═══════════════════════
 
