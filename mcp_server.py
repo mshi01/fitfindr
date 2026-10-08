@@ -69,20 +69,35 @@ mcp = FastMCP("fitfindr", log_level="WARNING")
 
 # ── TODO: uncomment and fill this in ──────────────────────────────────────────
 #
-# @mcp.tool()
-# def search_listings(
-#     description: str,
-#     size: str | None = None,
-#     max_price: float | None = None,
-# ) -> list[dict]:
-#     """
-#     <-- YOUR DESCRIPTION GOES HERE.
-#
-#         One or two sentences. What does this tool do, what does it need, and
-#         what does it give back when it finds nothing? Written for a reader
-#         who cannot see the code.
-#     """
-#     return _search_listings_impl(description, size, max_price)
+@mcp.tool()
+def search_listings(
+    description: str,
+    size: str | None = None,
+    max_price: float | None = None,
+) -> list[dict]:
+    """
+    Search secondhand clothing listings (Depop, Poshmark, thredUp, etc.) by
+    keyword and return the best matches, most relevant first, at most 10.
+
+    Args:
+        description: free-text keywords for the item wanted, e.g. "vintage
+            graphic tee". Matched against each listing's title, category,
+            style tags, colors, brand and description; filler words are ignored.
+        size: optional size label, e.g. "M", "XL", "W30" or "US 9". Matched
+            case-insensitively against whole size tokens, so "M" matches "S/M"
+            and "M/L" but not "XL". Omit to skip size filtering.
+        max_price: optional price ceiling in US dollars, inclusive (a listing
+            priced exactly at max_price is kept). Omit to skip price filtering.
+
+    Returns:
+        A list of listing objects, each with: id (str), title (str),
+        description (str), category (str), style_tags (list of str), size
+        (str), condition (str), price (number, dollars), colors (list of str),
+        brand (str or null — often null), platform (str).
+        If nothing matches, or the description has no usable keywords, returns
+        an empty list — never null and never an error.
+    """
+    return _search_listings_impl(description, size, max_price)
 #
 # ──────────────────────────────────────────────────────────────────────────────
 #
