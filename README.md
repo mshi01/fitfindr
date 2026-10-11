@@ -296,19 +296,52 @@ that produced it:
 **Happy path**
 
 ```
+python app.py ask 'purple dress' --trace
 
+[1] search_listings (via MCP)
+      in:  dict with keys: description, size, max_price
+      out: 3 items: Vintage Windbreaker — Color Block Purple/Teal, 90s Silk Slip Dress — Floral, Midi Length, Y2K Baby Tee — Butterfly Print
+[2] suggest_outfit
+      in:  dict with keys: item, wardrobe
+      out: Hey friend! That color block windbreaker is such a fun 90s score. Here are two quick ways to style it using pi…
+[3] create_fit_card
+      in:  dict with keys: outfit, item
+      out: Scored this wild 90s color block windbreaker on thredUp for only $40 and honestly I'm obsessed. It’s giving ma…
+
+  Found:    Vintage Windbreaker — Color Block Purple/Teal — $40.0 on thredUp
+
+  Outfit:   Hey friend! That color block windbreaker is such a fun 90s score. Here are two quick ways to style it using pieces from your closet:
+
+**Outfit 1**
+*   **Wear with:** Baggy straight-leg jeans, dark wash, White ribbed tank top, and Chunky white sneakers.
+*   **Why it works:** The fitted white tank balances the volume of the jacket, and the sneakers lean right into that retro streetwear vibe.
+
+**Outfit 2**
+*   **Wear with:** Wide-leg khaki trousers and Chunky white sneakers.
+*   **Why it works:** Pairing the sporty windbreaker with tailored trousers creates an effortless, high-low streetwear look.
+
+  Fit card: Scored this wild 90s color block windbreaker on thredUp for only $40 and honestly I'm obsessed. It’s giving major retro athletic energy, especially thrown over some baggy denim and chunky sneakers. 🧥
 ```
 
 **Empty search**
 
 ```
+python app.py ask 'black jacket under $0' --trace
 
+[1] search_listings (via MCP)
+      in:  dict with keys: description, size, max_price
+      out: [] (empty)
+      →    branch: empty, stopping before suggest_outfit
+
+  No listings matched "black jacket" under $0. You could raise your price limit; use fewer or more general keywords (e.g. "jacket" instead of a specific style).
 ```
 
-**On the MCP move:** <!-- what changed in your code, and whether anything
-behaved differently afterwards. If the rewire didn't work, say exactly where it
-broke — the error text and the last thing that worked. That earns the point in
-full. -->
+**On the MCP move:**
+
+I moved one tool, `search_listings`, behind an MCP server. Two files changed:
+
+- `mcp_server.py`: I registered `search_listings` with `@mcp.tool()` on a FastMCP server. The typed inputs match my Tool Inventory: `description: str`, `size: str | None`, `max_price: float | None`. The function just calls the real implementation in `tools.py`, imported under the alias `_search_listings_impl` so the registered tool doesn't call itself. I wrote the docstring for a reader who can't see the code. It names the units (US dollars, inclusive ceiling), explains how size matching works ("M" matches "S/M" but not "XL"), lists every field of the returned listings, and states the empty case: an empty list, never null and never an error.
+- `agent.py::run_agent`: in the search stage, the direct `search_listings(...)` call became `call_tool("search_listings", {...})` from `mcp_client.py`. The other two tools are still called directly.
 
 
 

@@ -109,6 +109,7 @@ def run_agent(query: str, wardrobe: dict) -> dict:
         than a stack trace. The import is already at the top of this file.
     """
     session = new_session(query, wardrobe)
+    trace.start_trace()
 
     # Each pass through the loop runs one stage; what a stage returns decides
     # which stage runs next (or whether the run ends).
@@ -129,7 +130,12 @@ def run_agent(query: str, wardrobe: dict) -> dict:
             # THE BRANCH: nothing found means we stop here, before any model call.
             if not session["search_results"]:
                 session["error"] = _no_results_message(parsed)
+                trace.step("search_listings (via MCP)", inputs=parsed,
+                           returned=session["search_results"],
+                           note="branch: empty, stopping before suggest_outfit")
                 return session
+            trace.step("search_listings (via MCP)", inputs=parsed,
+                       returned=session["search_results"])
             session["selected_item"] = session["search_results"][0]
             stage = "outfit"
 
@@ -137,12 +143,20 @@ def run_agent(query: str, wardrobe: dict) -> dict:
             session["outfit_suggestion"] = suggest_outfit(
                 session["selected_item"], session["wardrobe"]
             )
+            trace.step("suggest_outfit",
+                       inputs={"item": session["selected_item"],
+                               "wardrobe": session["wardrobe"]},
+                       returned=session["outfit_suggestion"])
             stage = "card"
 
         elif stage == "card":
             session["fit_card"] = create_fit_card(
                 session["outfit_suggestion"], session["selected_item"]
             )
+            trace.step("create_fit_card",
+                       inputs={"outfit": session["outfit_suggestion"],
+                               "item": session["selected_item"]},
+                       returned=session["fit_card"])
             stage = "done"
 
     return session
