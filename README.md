@@ -454,7 +454,7 @@ Add a new criterion (6): The top result for "white t-shirt size M" has category 
 | With an empty wardrobe and a query that matches a listing, the agent completes all three tools and the fit card is non-empty | 5 out of 5 | PASS | PASS | PASS | PASS | PASS | MET (5 out of 5) |
 | The item passed to suggest_outfit and create_fit_card is identical | 5 out of 5 | PASS | PASS | PASS | PASS | PASS | MET (5 out of 5)|
 | Each fit card mentions the item's exact price, and shares no identical opening sentence | 5 out of 5 | PASS | PASS | PASS | PASS | PASS | MET (5 out of 5) |
-| The top result for "white t-shirt size M" has category tops and the word "tee" in its title | PASS | PASS | PASS | PASS | PASS | MET (5 out of 5) |
+| The top result for "white t-shirt size M" has category tops and the word "tee" in its title | 5 out of 5 | PASS | PASS | PASS | PASS | PASS | MET (5 out of 5) |
 
 
 **Did it help, and how do I know:**
