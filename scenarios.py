@@ -49,6 +49,13 @@ SCENARIOS = [
         "wardrobe": "example",
         "criterion": 5,
     },
+    {
+        # A query data can match. Each fit card mentions the item's exact price, and shares no identical opening sentence. Criterion 5.
+        "name": " The top result for 'white t-shirt size M' has category tops and the word 'tee' in its title",
+        "query": "white t-shirt size M",
+        "wardrobe": "example",
+        "criterion": 6,
+    }
 
     # TODO: add what your criteria 3, 4 and 5 need.
     #

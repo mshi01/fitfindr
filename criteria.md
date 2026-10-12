@@ -99,6 +99,15 @@ For 5 different items, each fit card mentions the item's exact price, and shares
 For 5 different items, each fit card mentions that item's exact price, and no two of the 5 cards share the same opening sentence. All 5 must meet both conditions.
 
 ---
+## 6. A garment-type query ranks the right kind of item first
+
+For the query "white t-shirt size M", the top search result is a top whose title or tags include "tee", and it is size M or a size containing M (such as S/M). This holds in 5 of 5 runs.
+
+**Why this target**
+
+search_listings is plain code with no model call, so the same query returns the same ranking every time. Any miss would be a bug in the matching, not an unlucky run. The Before run returned a track jacket for this query "white t-shirt size M",because the listings say "tee" and the query says "t-shirt". The criterion checks that the synonym fix holds.
+
+---
 
 <!-- ─────────────────────────────────────────────────────────────────────────
      UNIT 4 — read this before you change anything above.

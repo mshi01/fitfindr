@@ -125,9 +125,13 @@ def search_listings(
     return [listing for _, listing in scored[: config.SEARCH_RESULT_LIMIT]]
 
 
+# "t-shirt", "t shirt" and "tshirt" all mean what listings call a "tee".
+_TSHIRT = re.compile(r"\bt[\s-]?shirts?\b")
+
+
 def _keywords(text: str) -> set[str]:
     """Lowercase alphanumeric words, minus stopwords, with a trailing plural 's' folded."""
-    words = re.findall(r"[a-z0-9]+", text.lower())
+    words = re.findall(r"[a-z0-9]+", _TSHIRT.sub("tee", text.lower()))
     return {
         w[:-1] if len(w) > 3 and w.endswith("s") else w
         for w in words

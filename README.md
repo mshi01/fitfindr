@@ -214,6 +214,17 @@ It suggest me about the max price ceiling cap.
 
 - *What I changed:*
 I would like to write one for the empty wardrobe path, so I rewrote the fifth criteria to be about the empty wardrobe path. 
+
+**Moment 3**
+
+- *What I asked for:*
+I asked Claude to diagnose why the app still worked and showed no error message after I changed a few characters of the Gemini API key.
+
+- *What came back:*
+It suggested caching as the cause. I turned caching off, but the problem didn't change.
+
+- *What I changed:*
+I told Claude what I had tried. It then suggested closing the terminal and opening a new one, and that solved the problem. 
 <!-- ═══════════════════════ UNIT 4 — THE TEST ═══════════════════════
 
      Don't fill these in during unit 3.
@@ -347,7 +358,7 @@ each fit card mentions the item's price and shares no identical opening sentence
 
 **Diagnoses**
 
-
+All 5 criteria were met according to their definitions. Criterion 5 could be tightened, for example by requiring each fit card to include the brand name as well as the price.
 
 ---
 
@@ -426,23 +437,31 @@ I moved one tool, `search_listings`, behind an MCP server. Two files changed:
 
 **What I changed:**
 
+ In tools.py, _keywords now folds "t-shirt", "t shirt", "tshirt" and "t-shirts" into "tee". It applies to both the query and the listing text, so a shopper's "t-shirt" matches listings titled "tee".
+
 **Which failure it was meant to fix:**
+
+In the Before run, "white t-shirt size M" returned a 90s Track Jacket as the top result. Criterion 5 still passed, because it checks only the price and the opening sentence, not whether the item fits the request. The failure was a relevance gap that none of my five criteria measured. The listings say "tee" and the query says "t-shirt", so the tee ranked third and a jacket that matched only on the color "white" ranked first.
+
+Add a new criterion (6): The top result for "white t-shirt size M" has category tops and the word "tee" in its title, in 5 of 5 runs.
 
 ### Run Log — After
 
 | Criterion | Target | Try 1 | Try 2 | Try 3 | Try 4 | Try 5 | Verdict |
 |---|---|---|---|---|---|---|---|
-| 1.  |  |  |  |  |  |  |  |
-| 2.  |  |  |  |  |  |  |  |
-| 3.  |  |  |  |  |  |  |  |
-| 4.  |  |  |  |  |  |  |  |
-| 5.  |  |  |  |  |  |  |  |
+| 1.  | A matching query completes all three tools | 4 out of 5 | PASS | PASS | PASS | PASS | PASS | MET (5 out of 5) |
+| 2.  | An impossible query stops before the second tool | 5 out of 5 | PASS | PASS | PASS | PASS | PASS | MET (5 out of 5) |
+| 3.  | With an empty wardrobe and a query that matches a listing, the agent completes all three tools and the fit card is non-empty | 5 out of 5 | PASS | PASS | PASS | PASS | PASS | MET (5 out of 5) |
+| 4.  | The item passed to suggest_outfit and create_fit_card is identical | 5 out of 5 | PASS | PASS | PASS | PASS | PASS | MET (5 out of 5)|
+| 5.  | Each fit card mentions the item's exact price, and shares no identical opening sentence | 5 out of 5 | PASS | PASS | PASS | PASS | PASS | MET (5 out of 5) |
+| 6.  | The top result for "white t-shirt size M" has category tops and the word "tee" in its title | PASS | PASS | PASS | PASS | PASS | MET (5 out of 5) |
+
 
 **Did it help, and how do I know:**
 
 <!-- If it made things worse, say that. Honestly reported, that earns full
      credit and is more interesting than one that worked. -->
-
+The top selected item in all 5 tries is Y2K Baby Tee — Butterfly Print ($18, depop) which has tops as its category and tee in its title, so this Criterion 6 is met. 
 
 
 ---
@@ -452,15 +471,15 @@ I moved one tool, `search_listings`, behind an MCP server. Two files changed:
 <!-- For each criterion still missed: what you'd do, and why you stopped where
      you did. "I ran out of time" is fine if it's true. Pretending nothing is
      left is not. -->
-
+I only checked one query, "white t-shirt size M", and confirmed that its top selected item has the category "tops" and "tee" in its title. Other queries may have similar synonym-matching problems (for example, "sneakers" vs. "trainers"), and I also need to check that a garment-type query ranks the right kind of item first. I didn't have time to test these, so they are worth digging into further.
 
 
 <!-- ═════════════════════════════════════════════════════════════════════
 
      SUBMISSION CHECKLIST — unit 3
 
-       [ ] criteria.md has five numbered criteria, each with a target
-       [ ] Each criterion has a reason underneath it
+       [] criteria.md has five numbered criteria, each with a target
+       [] Each criterion has a reason underneath it
        [ ] All five unit 3 sections above have real content
        [ ] Tool Inventory: all three tools, inputs WITH TYPES, a specific
            return value, and the empty case
