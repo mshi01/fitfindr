@@ -42,7 +42,23 @@ Given a query that matches no listings, the agent stops before calling
 5 of 5 is the right target here because this path has no variance. When search_listings returns nothing, the if not session["search_results"] check in the agent loop is plain code with no model call. It sets session["error"] and returns before suggest_outfit runs, so the same query should stop at the same point every time. Any miss would mean a bug in the guard, not an unlucky run.
 ---
 
-## 3. Something about state
+## 3. Empty wardrobe
+
+<!-- YOU WRITE THIS ONE TOO.
+
+     Pick something you actually care about getting right. Speed, the empty
+     wardrobe path, what happens when the model can't be reached, whether the
+     search respects a price ceiling — anything, as long as it names a number
+     or an observable outcome. -->
+With an empty wardrobe and a query that matches a listing, the agent completes all three tools in 5 of 5 runs. Session["error"] stays None, suggest_outfit returns a non-empty outfit built around the found item, and the fit card is non-empty. 
+
+
+**Why this target:**
+
+With an empty wardrobe and a query that matches a listing, suggest_outfit returns general styling advice for the found item. The agent doesn't raise an error and still calls create_fit_card, in 5 of 5 runs. The empty-wardrobe branch is a fixed code path.
+---
+
+## 4. The item passed to suggest_outfit and create_fit_card is identical
 
 In 5 of 5 matching runs, the item passed to suggest_outfit and create_fit_card is identical (same listing id and price) to session["selected_item"], and selected_item is search_results[0].
 <!-- YOU WRITE THIS ONE.
@@ -63,7 +79,7 @@ In 5 of 5 matching runs, the item passed to suggest_outfit and create_fit_card i
 
 ---
 
-## 4. Something about the fit card
+## 5. Each fit card mentions the item's exact price, and shares no identical opening sentence.
 
 <!-- YOU WRITE THIS ONE.
 
@@ -81,24 +97,6 @@ For 5 different items, each fit card mentions the item's exact price, and shares
 **Why this target:**
 
 For 5 different items, each fit card mentions that item's exact price, and no two of the 5 cards share the same opening sentence. All 5 must meet both conditions.
-
-
----
-
-## 5. Your choice
-
-<!-- YOU WRITE THIS ONE TOO.
-
-     Pick something you actually care about getting right. Speed, the empty
-     wardrobe path, what happens when the model can't be reached, whether the
-     search respects a price ceiling — anything, as long as it names a number
-     or an observable outcome. -->
-With an empty wardrobe and a query that matches a listing, the agent completes all three tools in 5 of 5 runs. session["error"] stays None, suggest_outfit returns a non-empty outfit built around the found item, and the fit card is non-empty. 
-
-
-**Why this target:**
-
-With an empty wardrobe and a query that matches a listing, suggest_outfit returns general styling advice for the found item. The agent doesn't raise an error and still calls create_fit_card, in 5 of 5 runs. The empty-wardrobe branch is a fixed code path.
 
 ---
 

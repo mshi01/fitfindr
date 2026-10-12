@@ -234,16 +234,86 @@ I would like to write one for the empty wardrobe path, so I rewrote the fifth cr
 
 | Criterion | Target | Try 1 | Try 2 | Try 3 | Try 4 | Try 5 | Verdict |
 |---|---|---|---|---|---|---|---|
-| 1.  |  |  |  |  |  |  |  |
-| 2.  |  |  |  |  |  |  |  |
-| 3.  |  |  |  |  |  |  |  |
-| 4.  |  |  |  |  |  |  |  |
-| 5.  |  |  |  |  |  |  |  |
+| 1.  | A matching query completes all three tools | 4 out of 5 | PASS | PASS | PASS | PASS | PASS | MET |
+| 2.  | An impossible query stops before the second tool | 5 out of 5 | PASS | PASS | PASS | PASS | PASS | MET |
+| 3.  | With an empty wardrobe and a query that matches a listing, the agent completes all three tools and the fit card is non-empty | 5 out of 5 | PASS | PASS | PASS | PASS | PASS | MET |
+| 4.  | The item passed to suggest_outfit and create_fit_card is identical | 5 out of 5 | PASS | PASS | PASS | PASS | PASS | MET |
+| 5.  | Each fit card mentions the item's exact price, and shares no identical opening sentence | 5 out of 5 | PASS | FAIL | FAIL | PASS | PASS | MISSED (3/5) |
 
 **Real output from one try**, pasted as text, naming the file and function
 that produced it:
 
 ```
+run python run_eval.py --label before
+
+Criterion 1:
+matching query completes  (example wardrobe)
+  query: vintage graphic tee under $30
+[1] search_listings (via MCP)
+      in:  dict with keys: description, size, max_price
+      out: 10 items: Graphic Tee — 2003 Tour Bootleg Style, Vintage Band Tee — Faded Grey, Vintage Graphic Hoodie — Faded Black … +7 more
+[2] suggest_outfit
+      in:  dict with keys: item, wardrobe
+      out: Hey there! Here are two easy, effortless ways to style your new Graphic Tee — 2003 Tour Bootleg Style using pi…
+[3] create_fit_card
+      in:  dict with keys: outfit, item
+      out: Found this sick 2003 tour bootleg tee on depop for $24 and it's giving major grungy streetwear energy. Throw i…
+  try 1: completed — fit card 212 chars
+
+Criterion 2:
+impossible query stops early  (example wardrobe)
+  query: designer ballgown size XXS under $5
+[1] search_listings (via MCP)
+      in:  dict with keys: description, size, max_price
+      out: [] (empty)
+      →    branch: empty, stopping before suggest_outfit
+  try 1: stopped early — No listings matched "designer ballgown" in size XXS under $5
+
+Criterion 3:
+empty wardrobe  (empty wardrobe)
+  query: denim jacket under $50
+[1] search_listings (via MCP)
+      in:  dict with keys: description, size, max_price
+      out: 7 items: Denim Jacket — Light Wash, Cropped, High-Waisted Denim Shorts — Cutoff, Denim Vest — Medium Wash, Studded … +4 more
+[2] suggest_outfit
+      in:  dict with keys: item, wardrobe
+      out: Hey there! That Wrangler jacket is an absolute gem—structured shoulders make all the difference! Here are two …
+[3] create_fit_card
+      in:  dict with keys: outfit, item
+      out: Scored this cropped Wrangler denim jacket on Poshmark for $42 and the structured shoulders give it the ultimat…
+  try 1: completed — fit card 208 chars
+
+Criterion 4:
+states matching  (example wardrobe)
+  query: denim jacket under $50
+[1] search_listings (via MCP)
+      in:  dict with keys: description, size, max_price
+      out: 7 items: Denim Jacket — Light Wash, Cropped, High-Waisted Denim Shorts — Cutoff, Denim Vest — Medium Wash, Studded … +4 more
+[2] suggest_outfit
+      in:  dict with keys: item, wardrobe
+      out: **Outfit 1** * **Denim Jacket — Light Wash, Cropped** + **White ribbed tank top** + **Baggy straight-leg jeans…
+[3] create_fit_card
+      in:  dict with keys: outfit, item
+      out: Found this cropped light wash denim jacket on Poshmark for $42 and it instantly gave me that 90s off-duty mode…
+  try 1: completed — fit card 199 chars
+
+Criterion 5:
+each fit card mentions the item's price and shares no identical opening sentence (example wardrobe)
+  query: white t-shirt size M
+[1] search_listings (via MCP)
+      in:  dict with keys: description, size, max_price
+      out: 6 items: 90s Track Jacket — Navy/White Stripe, Vintage Polo Shirt — Forest Green, Y2K Baby Tee — Butterfly Print … +3 more
+  [rate limit] 15 requests used this minute. Waiting 43s. This is normal.
+[2] suggest_outfit
+      in:  dict with keys: item, wardrobe
+      out: Here are two fresh ways to style your new 90s Track Jacket:  **Outfit 1** * **Pair with:** White ribbed tank t…
+[3] create_fit_card
+      in:  dict with keys: outfit, item
+      out: Found this navy and white 90s track jacket on Poshmark for $45 and it’s giving major retro athletic energy. To…
+  try 1: completed — fit card 188 chars
+
+
+
 
 ```
 

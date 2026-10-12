@@ -29,12 +29,27 @@ SCENARIOS = [
         "criterion": 2,
     },
     {
-        # A user with nothing saved. One of unit 4's three failure modes.
+        # A query with empty wardrobe. Criterion 3.
         "name": "empty wardrobe",
         "query": "denim jacket under $50",
         "wardrobe": "empty",
-        "criterion": None,
+        "criterion": 3,
     },
+    {
+        # A query data can match. The item passed to suggest_outfit and create_fit_card is identical to session["selected_item"], and selected_item is search_results[0]. Criterion 4.
+        "name": "states matching",
+        "query": "denim jacket under $50",
+        "wardrobe": "example",
+        "criterion": 4,
+    },
+    {
+        # A query data can match. Each fit card mentions the item's exact price, and shares no identical opening sentence. Criterion 5.
+        "name": "each fit card mentions the item's price and shares no identical opening sentence",
+        "query": "white t-shirt size M",
+        "wardrobe": "example",
+        "criterion": 5,
+    },
+
     # TODO: add what your criteria 3, 4 and 5 need.
     #
     # Set "criterion" to the number in criteria.md that the scenario tests.
